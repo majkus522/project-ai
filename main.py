@@ -43,7 +43,7 @@ target_net.load_state_dict(policy_net.state_dict())
 #Action
 def select_action(state, epsilon):
     if random.random() < epsilon:
-        return random.choice(env.available_actions())
+        return random.choice(available_actions())
     else:
         with torch.no_grad():
             state_t = torch.FloatTensor(state).unsqueeze(0)
