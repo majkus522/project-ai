@@ -5,36 +5,52 @@ class Game:
     def __init__(self):
         self.board = None
         self.done = None
+        self.max = 0
         self.reset()
 
     def reset(self):
         self.board = np.zeros((4, 4))
         self.done = False
+        self.max = 0
+        self.spawn()
+        self.spawn()
         return self.board.copy()
 
+    def compress(self):
+        for y in range(2, -1, -1):
+            for x in range(4):
+                if self.board[y][x] == 0:
+                    continue
+                for dy in range(3, y, -1):
+                    if self.board[dy][x] == 0:
+                        self.board[dy][x] = self.board[y][x]
+                        self.board[y][x] = 0
+                        break
+
+    def merge(self):
+        reward = 0
+        for y in range(3, 0, -1):
+            for x in range(4):
+                if self.board[y][x] == 0:
+                    continue
+                if self.board[y][x] == self.board[y - 1][x]:
+                    self.board[y][x] += 1
+                    self.board[y - 1][x] = 0
+                    if self.board[y][x] > self.max:
+                        self.max = self.board[y][x]
+                    reward += self.board[y][x] * 0.1
+                    break
+        return reward
+
     def step(self, action):
-        """
-        Rewrite gameplay
-        # Agent move
-        self.board[action] = 1
-
-        if self.check_winner(1):
-            return self.board.copy(), 1, True
-
-        if len(available_actions()) == 0:
-            return self.board.copy(), 0, True
-
-        # Opponent (random)
-        opp_action = np.random.choice(available_actions())
-        self.board[opp_action] = -1
-
-        if self.check_winner(-1):
-            return self.board.copy(), -1, True
-
-        if len(available_actions()) == 0:
-            return self.board.copy(), 0, True
-        """
-        return self.board.copy(), 0, False
+        self.board = np.rot90(self.board, action)
+        self.compress()
+        reward = self.merge()
+        self.compress()
+        self.board = np.rot90(self.board, -action)
+        if self.check_lose() or not self.spawn():
+            return self.board.copy(), reward + self.max, True
+        return self.board.copy(), reward, False
 
     def spawn(self):
         locations = []
@@ -42,8 +58,11 @@ class Game:
             for y in range(4):
                 if self.board[x][y] == 0:
                     locations.append((x, y))
+        if len(locations) == 0:
+            return False
         l = random.choice(locations)
-        self.board[l[0]][l[1]] = 2
+        self.board[l[0]][l[1]] = 1
+        return True
 
     def check_lose(self):
         for x in range(4):
@@ -65,7 +84,9 @@ class Game:
         return True
 
 game = Game()
-game.spawn()
-game.spawn()
-print(game.check_lose())
-print(game.board)
+while True:
+    print(game.board)
+    a = int(input("Input: "))
+    ret = game.step(a)
+    if ret[2]:
+        break
