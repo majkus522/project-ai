@@ -5,13 +5,11 @@ class Game:
     def __init__(self):
         self.board = None
         self.done = None
-        self.max = 0
         self.reset()
 
     def reset(self):
         self.board = np.zeros((4, 4))
         self.done = False
-        self.max = 0
         self.spawn()
         self.spawn()
         return self.board.copy()
@@ -36,20 +34,33 @@ class Game:
                 if self.board[y][x] == self.board[y - 1][x]:
                     self.board[y][x] += 1
                     self.board[y - 1][x] = 0
-                    if self.board[y][x] > self.max:
-                        self.max = self.board[y][x]
-                    reward += self.board[y][x] * 0.1
+                    reward += self.board[y][x] * 0.00001
                     break
         return reward
+
+    def monotonicity(self):
+        score = 0
+        for row in self.board:
+            if all(row[i] <= row[i + 1] for i in range(3)) or \
+                    all(row[i] >= row[i + 1] for i in range(3)):
+                score += 1
+        for col in self.board.T:
+            if all(col[i] <= col[i + 1] for i in range(3)) or \
+                    all(col[i] >= col[i + 1] for i in range(3)):
+                score += 1
+        return score
 
     def step(self, action):
         self.board = np.rot90(self.board, action)
         self.compress()
-        reward = self.merge()
+        merge_reward = self.merge()
         self.compress()
         self.board = np.rot90(self.board, -action)
+        empty_tiles = np.sum(self.board == 0)
+        max_tile = np.max(self.board)
+        reward = merge_reward * 10 + max_tile * 0.1 + empty_tiles * 0.3 + self.monotonicity() * 0.5
         if self.check_lose() or not self.spawn():
-            return self.board.copy(), reward + self.max, True
+            return self.board.copy(), reward - 10, True
         return self.board.copy(), reward, False
 
     def spawn(self):
@@ -82,11 +93,3 @@ class Game:
                     if self.board[x][y] == self.board[x][y + 1] or self.board[x][y + 1] == 0:
                         return False
         return True
-
-game = Game()
-while True:
-    print(game.board)
-    a = int(input("Input: "))
-    ret = game.step(a)
-    if ret[2]:
-        break
