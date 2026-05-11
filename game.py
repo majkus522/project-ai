@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import random
 
@@ -74,6 +75,14 @@ class Game:
         l = random.choice(locations)
         self.board[l[0]][l[1]] = 1
         return True
+
+    def normalize(self):
+        temp = np.zeros((4, 4))
+        for x in range(4):
+            for y in range(4):
+                if self.board[x][y] != 0:
+                    temp[x][y] = math.log2(self.board[x][y])
+        return temp.reshape((-1))
 
     def check_lose(self):
         for x in range(4):

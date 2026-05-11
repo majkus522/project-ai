@@ -9,8 +9,8 @@ import numpy as np
 
 GAMMA = 0.99
 BATCH_SIZE = 100
-EPISODES = 20000
-epsilon = 1.0
+EPISODES = 2000
+epsilon = 0.1
 
 #Neural network
 class DQN(nn.Module):
@@ -97,6 +97,7 @@ try:
                 if total_reward > best_reward:
                     best_reward = total_reward
                     best_game = current_game.copy()
+                    print(best_game[-1])
                     torch.save(best_game, "best_game.pth")
                 break
 
@@ -124,4 +125,4 @@ def replay_best_game():
         print(action, reward)
         time.sleep(0.3)
 
-replay_best_game()
+#replay_best_game()
