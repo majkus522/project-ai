@@ -7,7 +7,21 @@ from collections import deque
 from game import Game
 import numpy as np
 import time
+
+class Unbuffered(object):
+   def __init__(self, stream):
+       self.stream = stream
+   def write(self, data):
+       self.stream.write(data)
+       self.stream.flush()
+   def writelines(self, datas):
+       self.stream.writelines(datas)
+       self.stream.flush()
+   def __getattr__(self, attr):
+       return getattr(self.stream, attr)
+
 import sys
+sys.stdout = Unbuffered(sys.stdout)
 
 #Parameters
 GAMMA = float(sys.argv[1])
@@ -116,7 +130,7 @@ try:
 
         if episode % 100 == 0:
             target_net.load_state_dict(policy_net.state_dict())
-           # print(f"Episode {episode}, Reward: {total_reward}, Epsilon: {epsilon}, Max: {maxTile}, All Max: {allMax}")
+            print(f"Episode {episode}, Best reward: {best_reward}, All Max: {allMax}")
             """
             torch.save({
                 'model_state_dict': policy_net.state_dict(),
