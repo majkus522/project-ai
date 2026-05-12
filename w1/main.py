@@ -7,11 +7,12 @@ from collections import deque
 from game import Game
 import numpy as np
 import time
+import sys
 
 #Parameters
 GAMMA = 0.99
 BATCH_SIZE = 100
-EPISODES = 2000
+EPISODES = 1000
 epsilon = 1.0
 
 #Neural network
@@ -19,9 +20,9 @@ class DQN(nn.Module):
     def __init__(self):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(16, 128),
+            nn.Linear(16, int(sys.argv[1])),
             nn.ReLU(),
-            nn.Linear(128, 4)
+            nn.Linear(int(sys.argv[1]), 4)
         )
 
     def forward(self, x):
@@ -139,3 +140,5 @@ def replay_best_game():
         time.sleep(0.3)
 
 #replay_best_game()
+
+print(f"Best reward: {best_reward}, Best tile: {allMax}")
