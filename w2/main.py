@@ -26,7 +26,7 @@ sys.stdout = Unbuffered(sys.stdout)
 #Parameters
 GAMMA = 0.99
 BATCH_SIZE = 100
-EPISODES = 20000
+EPISODES = 50000
 epsilon = 1.0
 
 #Neural network
@@ -132,7 +132,7 @@ try:
 
         if episode % 1000 == 0:
             target_net.load_state_dict(policy_net.state_dict())
-            print(f"Episode {episode}, Best reward: {best_reward}, All Max: {allMax}")
+            print(f"Episode {episode}, Reward: {total_reward}, Best reward: {best_reward}, Max: {maxTile}, All Max: {allMax}")
             """
             torch.save({
                 'model_state_dict': policy_net.state_dict(),
