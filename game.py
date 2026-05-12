@@ -13,7 +13,7 @@ class Game:
         self.done = False
         self.spawn()
         self.spawn()
-        return self.board.copy()
+        return self.normalize()
 
     def compress(self):
         for y in range(2, -1, -1):
@@ -33,9 +33,9 @@ class Game:
                 if self.board[y][x] == 0:
                     continue
                 if self.board[y][x] == self.board[y - 1][x]:
-                    self.board[y][x] += 1
+                    self.board[y][x] *= 2
                     self.board[y - 1][x] = 0
-                    reward += self.board[y][x] * 0.00001
+                    reward += math.log2(self.board[y][x]) * 0.00001
                     break
         return reward
 
@@ -58,11 +58,11 @@ class Game:
         self.compress()
         self.board = np.rot90(self.board, -action)
         empty_tiles = np.sum(self.board == 0)
-        max_tile = np.max(self.board)
+        max_tile = math.log2(np.max(self.board))
         reward = merge_reward * 10 + max_tile * 0.1 + empty_tiles * 0.3 + self.monotonicity() * 0.5
         if self.check_lose() or not self.spawn():
-            return self.board.copy(), reward - 10, True
-        return self.board.copy(), reward, False
+            return self.normalize(), reward - 10, True
+        return self.normalize(), reward, False
 
     def spawn(self):
         locations = []

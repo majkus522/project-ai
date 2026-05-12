@@ -6,11 +6,13 @@ import random
 from collections import deque
 from game import Game
 import numpy as np
+import time
 
+#Parameters
 GAMMA = 0.99
 BATCH_SIZE = 100
 EPISODES = 2000
-epsilon = 0.1
+epsilon = 1.0
 
 #Neural network
 class DQN(nn.Module):
@@ -32,12 +34,15 @@ optimizer = optim.Adam(policy_net.parameters(), lr=1e-3)
 memory = deque(maxlen=EPISODES)
 best_reward = float("-inf")
 best_game = []
+start = 0
 
+#Load checkpoint
 if os.path.isfile("checkpoint.pth"):
     checkpoint = torch.load("checkpoint.pth")
     policy_net.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     epsilon = checkpoint['epsilon']
+    start = checkpoint['episode']
 
 target_net = DQN()
 target_net.load_state_dict(policy_net.state_dict())
@@ -59,10 +64,10 @@ def optimize():
     batch = random.sample(memory, BATCH_SIZE)
     states, actions, rewards, next_states, dones = zip(*batch)
 
-    states = torch.from_numpy(np.stack(states)).float().view(BATCH_SIZE, -1)
+    states = torch.from_numpy(np.stack(states)).float()
     actions = torch.LongTensor(actions).unsqueeze(1)
     rewards = torch.FloatTensor(rewards)
-    next_states = torch.from_numpy(np.stack(next_states)).float().view(BATCH_SIZE, -1)
+    next_states = torch.from_numpy(np.stack(next_states)).float()
     dones = torch.FloatTensor(dones)
 
     q_values = policy_net(states).gather(1, actions).squeeze()
@@ -77,11 +82,13 @@ def optimize():
     optimizer.step()
 
 #Training
+allMax = 0
 try:
-    for episode in range(EPISODES):
+    for episode in range(start, EPISODES):
         state = env.reset()
         total_reward = 0
         current_game = []
+        maxTile = 0
 
         while True:
             action = select_action(state)
@@ -91,13 +98,14 @@ try:
             memory.append((state, action, reward, next_state, done))
             state = next_state
             total_reward += reward
+            maxTile = max(state)
+            allMax = max(allMax, maxTile)
             optimize()
 
             if done:
                 if total_reward > best_reward:
                     best_reward = total_reward
                     best_game = current_game.copy()
-                    print(best_game[-1])
                     torch.save(best_game, "best_game.pth")
                 break
 
@@ -105,21 +113,26 @@ try:
 
         if episode % 100 == 0:
             target_net.load_state_dict(policy_net.state_dict())
-            print(f"Episode {episode}, Reward: {total_reward}, Epsilon: {epsilon}, Board: \r\n{state}")
+            print(f"Episode {episode}, Reward: {total_reward}, Epsilon: {epsilon}, Max: {maxTile}, All Max: {allMax}")
+            torch.save({
+                'model_state_dict': policy_net.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'epsilon': epsilon,
+                'episode': episode
+            }, "checkpoint.pth")
+
 except KeyboardInterrupt:
     torch.save({
         'model_state_dict': policy_net.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'epsilon': epsilon,
+        'episode': episode
     }, "checkpoint.pth")
     torch.save(best_game, "best_game.pth")
     print("💾 Progress saved!")
 
 def replay_best_game():
-    import time
-
     game_data = torch.load("best_game.pth", weights_only=False)
-
     for i, (state, action, reward) in enumerate(game_data):
         print(state)
         print(action, reward)
