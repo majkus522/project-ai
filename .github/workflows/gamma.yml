@@ -1,0 +1,46 @@
+name: Gamma
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: gamma - 0.99
+      run: python gamma/main.py 0.99
+    - name: gamma - 0.98
+      run: python gamma/main.py 0.98
+    - name: gamma - 0.97
+      run: python gamma/main.py 0.97
+    - name: gamma - 0.96
+      run: python gamma/main.py 0.96
+    - name: gamma - 0.95
+      run: python gamma/main.py 0.95
+    - name: gamma - 0.94
+      run: python gamma/main.py 0.94
+    - name: gamma - 0.93
+      run: python gamma/main.py 0.93
+    - name: gamma - 0.92
+      run: python gamma/main.py 0.92
+    - name: gamma - 0.91
+      run: python gamma/main.py 0.91
+    - name: gamma - 0.90
+      run: python gamma/main.py 0.90

@@ -12,7 +12,7 @@ import sys
 #Parameters
 GAMMA = 0.99
 BATCH_SIZE = 100
-EPISODES = 1000
+EPISODES = 20000
 epsilon = 1.0
 
 #Neural network
@@ -22,7 +22,9 @@ class DQN(nn.Module):
         self.net = nn.Sequential(
             nn.Linear(16, int(sys.argv[1])),
             nn.ReLU(),
-            nn.Linear(int(sys.argv[1]), 4)
+            nn.Linear(int(sys.argv[1]), int(sys.argv[2])),
+            nn.ReLU(),
+            nn.Linear(int(sys.argv[2]), 4)
         )
 
     def forward(self, x):

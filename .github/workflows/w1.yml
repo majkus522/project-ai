@@ -26,3 +26,13 @@ jobs:
         pip install -r requirements.txt
     - name: w1 - 256
       run: python w1/main.py 256
+    - name: w1 - 128
+      run: python w1/main.py 128
+    - name: w1 - 64
+      run: python w1/main.py 64
+    - name: w1 - 32
+      run: python w1/main.py 32
+    - name: w1 - 16
+      run: python w1/main.py 16
+    - name: w1 - 8
+      run: python w1/main.py 8

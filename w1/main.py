@@ -12,7 +12,7 @@ import sys
 #Parameters
 GAMMA = 0.99
 BATCH_SIZE = 100
-EPISODES = 1000
+EPISODES = 20000
 epsilon = 1.0
 
 #Neural network
