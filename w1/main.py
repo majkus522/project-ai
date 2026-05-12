@@ -128,7 +128,7 @@ try:
 
         epsilon = max(0.1, epsilon * 0.995)
 
-        if episode % 100 == 0:
+        if episode % 1000 == 0:
             target_net.load_state_dict(policy_net.state_dict())
             print(f"Episode {episode}, Best reward: {best_reward}, All Max: {allMax}")
             """
