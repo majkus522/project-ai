@@ -53,7 +53,7 @@ start = 0
 
 #Load checkpoint
 if os.path.isfile(f"checkpoint_w1_{int(sys.argv[1])}.pth"):
-    checkpoint = torch.load("checkpoint.pth")
+    checkpoint = torch.load(f"checkpoint_w1_{int(sys.argv[1])}.pth")
     policy_net.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     epsilon = checkpoint['epsilon']
@@ -61,6 +61,14 @@ if os.path.isfile(f"checkpoint_w1_{int(sys.argv[1])}.pth"):
 
 target_net = DQN()
 target_net.load_state_dict(policy_net.state_dict())
+
+def saveProgress():
+    torch.save({
+        'model_state_dict': policy_net.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'epsilon': epsilon,
+        'episode': episode
+    }, f"checkpoint_w1_{int(sys.argv[1])}.pth")
 
 #Action
 def select_action(state):
@@ -121,7 +129,7 @@ try:
                 if total_reward > best_reward:
                     best_reward = total_reward
                     best_game = current_game.copy()
-                    torch.save(best_game, "best_game.pth")
+                    torch.save(best_game, f"best_game_w1_{int(sys.argv[1])}.pth")
                 break
 
         epsilon = max(0.1, epsilon * 0.995)
@@ -129,21 +137,10 @@ try:
         if episode % 1000 == 0:
             target_net.load_state_dict(policy_net.state_dict())
             print(f"Episode {episode}, Reward: {total_reward}, Best reward: {best_reward}, Max: {maxTile}, All Max: {allMax}")
-            torch.save({
-                'model_state_dict': policy_net.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'epsilon': epsilon,
-                'episode': episode
-            }, f"checkpoint_w1_{int(sys.argv[1])}.pth")
+            saveProgress()
 
 except KeyboardInterrupt:
-    torch.save({
-        'model_state_dict': policy_net.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
-        'epsilon': epsilon,
-        'episode': episode
-    }, f"checkpoint_w1_{int(sys.argv[1])}.pth")
-    torch.save(best_game, f"best_game_w1_{int(sys.argv[1])}.pth")
+    saveProgress()
     print("Progress saved!")
 
 def replay_best_game():
