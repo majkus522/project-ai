@@ -54,14 +54,12 @@ best_game = []
 start = 0
 
 #Load checkpoint
-"""
-if os.path.isfile("checkpoint.pth"):
+if os.path.isfile(f"checkpoint_w2_{int(sys.argv[1])}_{int(sys.argv[2])}.pth"):
     checkpoint = torch.load("checkpoint.pth")
     policy_net.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     epsilon = checkpoint['epsilon']
     start = checkpoint['episode']
-"""
 
 target_net = DQN()
 target_net.load_state_dict(policy_net.state_dict())
@@ -133,29 +131,25 @@ try:
         if episode % 1000 == 0:
             target_net.load_state_dict(policy_net.state_dict())
             print(f"Episode {episode}, Reward: {total_reward}, Best reward: {best_reward}, Max: {maxTile}, All Max: {allMax}")
-            """
             torch.save({
                 'model_state_dict': policy_net.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'epsilon': epsilon,
                 'episode': episode
-            }, "checkpoint.pth")
-            """
+            }, f"checkpoint_w2_{int(sys.argv[1])}_{int(sys.argv[2])}.pth")
 
 except KeyboardInterrupt:
-    """
     torch.save({
         'model_state_dict': policy_net.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'epsilon': epsilon,
         'episode': episode
-    }, "checkpoint.pth")
-    torch.save(best_game, "best_game.pth")
-    """
-    print("💾 Progress saved!")
+    }, f"checkpoint_w2_{int(sys.argv[1])}_{int(sys.argv[2])}.pth")
+    torch.save(best_game, f"best_game_w2_{int(sys.argv[1])}_{int(sys.argv[2])}.pth")
+    print("Progress saved!")
 
 def replay_best_game():
-    game_data = torch.load("best_game.pth", weights_only=False)
+    game_data = torch.load(f"best_game_w2_{int(sys.argv[1])}_{int(sys.argv[2])}.pth", weights_only=False)
     for i, (state, action, reward) in enumerate(game_data):
         print(state)
         print(action, reward)

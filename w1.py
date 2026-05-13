@@ -24,7 +24,7 @@ import sys
 sys.stdout = Unbuffered(sys.stdout)
 
 #Parameters
-GAMMA = float(sys.argv[1])
+GAMMA = 0.99
 BATCH_SIZE = 100
 EPISODES = 50000
 epsilon = 1.0
@@ -34,9 +34,9 @@ class DQN(nn.Module):
     def __init__(self):
         super().__init__()
         self.net = nn.Sequential(
-            nn.Linear(16, 128),
+            nn.Linear(16, int(sys.argv[1])),
             nn.ReLU(),
-            nn.Linear(128, 4)
+            nn.Linear(int(sys.argv[1]), 4)
         )
 
     def forward(self, x):
@@ -52,14 +52,12 @@ best_game = []
 start = 0
 
 #Load checkpoint
-"""
-if os.path.isfile("checkpoint.pth"):
+if os.path.isfile(f"checkpoint_w1_{int(sys.argv[1])}.pth"):
     checkpoint = torch.load("checkpoint.pth")
     policy_net.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     epsilon = checkpoint['epsilon']
     start = checkpoint['episode']
-"""
 
 target_net = DQN()
 target_net.load_state_dict(policy_net.state_dict())
@@ -131,29 +129,25 @@ try:
         if episode % 1000 == 0:
             target_net.load_state_dict(policy_net.state_dict())
             print(f"Episode {episode}, Reward: {total_reward}, Best reward: {best_reward}, Max: {maxTile}, All Max: {allMax}")
-            """
             torch.save({
                 'model_state_dict': policy_net.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'epsilon': epsilon,
                 'episode': episode
-            }, "checkpoint.pth")
-            """
+            }, f"checkpoint_w1_{int(sys.argv[1])}.pth")
 
 except KeyboardInterrupt:
-    """
     torch.save({
         'model_state_dict': policy_net.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
         'epsilon': epsilon,
         'episode': episode
-    }, "checkpoint.pth")
-    torch.save(best_game, "best_game.pth")
-    """
-    print("💾 Progress saved!")
+    }, f"checkpoint_w1_{int(sys.argv[1])}.pth")
+    torch.save(best_game, f"best_game_w1_{int(sys.argv[1])}.pth")
+    print("Progress saved!")
 
 def replay_best_game():
-    game_data = torch.load("best_game.pth", weights_only=False)
+    game_data = torch.load(f"best_game_w1_{int(sys.argv[1])}.pth", weights_only=False)
     for i, (state, action, reward) in enumerate(game_data):
         print(state)
         print(action, reward)
